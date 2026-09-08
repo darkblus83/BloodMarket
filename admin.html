@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BloodMarket Admin</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<style>
+:root{--bg:#050505;--panel:#0b0b0b;--red:#d9002b;--text:#f5f5f5;--muted:#888;--line:#3a111c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -5%,#270007,#050505 60%);color:var(--text);font-family:Arial,system-ui,sans-serif}.wrap{max-width:900px;margin:auto;padding:24px}.card{background:#0b0b0b;border:1px solid #35121b;border-radius:20px;padding:22px;margin-bottom:18px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:13px;color:#ccc}input,textarea{width:100%;background:#080808;color:#fff;border:1px solid #40151e;border-radius:10px;padding:12px}.btn{border:1px solid #6c1528;background:#130408;color:#fff;border-radius:12px;padding:12px 17px;font-weight:700}.primary{background:#c90029}.muted{color:var(--muted);line-height:1.5}.hidden{display:none!important}.notice{padding:12px;border-radius:10px;background:#170408;border:1px solid #7a1728;color:#ffb4c0;margin-top:10px}@media(max-width:650px){.wrap{padding:16px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style></head>
+<body><main class="wrap">
+<div class="card"><h1 style="margin:0 0 6px">BloodMarket Admin</h1><div class="muted">This page is intentionally separate from the public website.</div></div>
+<section id="login" class="card"><h2>Admin sign in</h2><p class="muted">Sign in with the Firebase account that you designate as the administrator.</p><div class="grid"><div class="field full"><label>Email</label><input id="email" type="email"></div><div class="field full"><label>Password</label><input id="password" type="password"></div></div><button class="btn primary" onclick="login()">Login</button><div id="msg" class="notice hidden"></div></section>
+<section id="panel" class="hidden"><div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Prices</h2><button class="btn" onclick="logout()">Logout</button></div><p class="muted">These values are saved to Firestore and are shown on the public website.</p><div class="grid"><div class="field"><label>Facebook Buy</label><input id="fbBuy" type="number"></div><div class="field"><label>Facebook Sell</label><input id="fbSell" type="number"></div><div class="field"><label>Email Buy</label><input id="emBuy" type="number"></div><div class="field"><label>Email Sell</label><input id="emSell" type="number"></div><div class="field full"><label>Emergency notice</label><textarea id="notice" rows="4"></textarea></div></div><button class="btn primary" onclick="save()">Save prices</button><div id="saveMsg" class="notice hidden"></div></div></section>
+</main><script>
+let auth=null,db=null,user=null;
+try{if(typeof firebaseConfig!=='undefined'&&firebaseConfig&&firebaseConfig.apiKey){firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore()}}catch(e){showMsg(e.message)}
+function showMsg(t){msg.textContent=t;msg.classList.remove('hidden')}
+async function login(){if(!auth)return showMsg('Firebase configuration is missing.');try{const c=await auth.signInWithEmailAndPassword(email.value.trim(),password.value);user=c.user;await openPanel()}catch(e){showMsg(e.message)}}
+async function openPanel(){login.classList.add('hidden');panel.classList.remove('hidden');try{const s=await db.collection('siteSettings').doc('public').get();const d=s.exists?s.data():{fbBuy:500,fbSell:350,emBuy:300,emSell:250,notice:'সার্ভিস স্বাভাবিকভাবে চলছে। নতুন আপডেট এখানে দেখানো হবে।'};fbBuy.value=d.fbBuy??500;fbSell.value=d.fbSell??350;emBuy.value=d.emBuy??300;emSell.value=d.emSell??250;notice.value=d.notice??''}catch(e){saveMsg.textContent=e.message;saveMsg.classList.remove('hidden')}}
+async function save(){if(!db||!user)return;try{await db.collection('siteSettings').doc('public').set({fbBuy:Number(fbBuy.value)||0,fbSell:Number(fbSell.value)||0,emBuy:Number(emBuy.value)||0,emSell:Number(emSell.value)||0,notice:notice.value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});saveMsg.textContent='Saved.';saveMsg.classList.remove('hidden')}catch(e){saveMsg.textContent=e.message;saveMsg.classList.remove('hidden')}}
+async function logout(){if(auth)await auth.signOut()}
+if(auth)auth.onAuthStateChanged(u=>{user=u;if(!u){login.classList.remove('hidden');panel.classList.add('hidden')}});
+</script></body></html>

@@ -1,8 +1,16 @@
-BloodMarket V5 - Firebase-ready package
+BloodMarket final layout package.
 
-Firebase project: bloodmarket-5689c
+Public page:
+- index.html
+- Product prices are visible to visitors.
+- Buy/Sell actions require Firebase Login/Sign up.
+- Admin button/link is not shown on the public page.
 
-Important safety note:
-- PAS is only a reference/code field. Never enter or store any real Facebook/Google/email password.
-- This package is Firebase-ready but Hosting deployment still requires Firebase CLI or another supported deployment method.
-- Do not use the prototype Admin PIN for production authorization.
+Separate admin page:
+- admin.html
+- Admin can sign in separately and save public prices to Firestore at siteSettings/public.
+
+Important:
+- Keep your existing firebase-config.js in the GitHub repository.
+- The sample demo prices are Facebook Buy 500, Facebook Sell 350, Email Buy 300, Email Sell 250.
+- For real production security, Firestore rules/custom admin claims must restrict writes to siteSettings and orders.
